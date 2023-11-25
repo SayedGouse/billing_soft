@@ -1,0 +1,116 @@
+import React, { useState } from 'react'
+import { RxAvatar } from "react-icons/rx"
+import axios from 'axios'
+
+const Addagent = () => {
+
+    const intialvalue = { fullname: '', dob: '', mobile_no: '', gender: '', email: '', adhar_card_no: '', address: '', password: '' }
+    const [signup, setsignup] = useState(intialvalue)
+    const [showPassword, setShowPassword] = useState(false);
+
+    const changehandeler = (e) => {
+        const { name, value } = e.target
+        setsignup({ ...signup, [name]: value })
+        console.log(signup.fullname)
+        console.log(signup.password)
+    }
+    const togglePassword = () => {
+        setShowPassword(!showPassword);
+    }
+
+    const signupform = (e) => {
+        e.preventDefault();
+        axios.post("http://localhost:3001/signup", {
+            signupdata: signup
+        }).then((response) => {
+            console.log(response)
+            alert("Thank you for Registration")
+            window.location.reload()
+        }).catch(err => {
+            console.log(err)
+        })
+
+
+    }
+
+
+    return (
+        <main>
+            <div className='container-fluid' >
+                <div className='row'>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '80vw' }} >
+                        <RxAvatar size={180} />
+                    </div>
+                    <div className='p-5'>
+                        <form onSubmit={signupform}>
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <tr className='me-3'>
+                                    <th style={{ opacity: '50%', width: '80vw', padding: '2% 0 2% 0' }}>Full Name</th>
+                                    <input type='text' name='fullname' value={signup.fullname} className='form-control' onChange={changehandeler} />
+                                </tr>
+                                <tr>
+                                    <th style={{ opacity: '50%', width: '80vw', padding: '2% 0 2% 0' }}>D.O.B</th>
+                                    <input type='date' name='dob' value={signup.dob} className='form-control' onChange={changehandeler} />
+                                </tr>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <tr className='me-3'>
+                                    <th style={{ opacity: '50%', width: '80vw', padding: '2% 0 2% 0' }}>Mobile No.</th>
+                                    <input type='tel' name='mobile_no' value={signup.mobile_no} className='form-control' onChange={changehandeler} />
+                                </tr>
+                                <tr>
+                                    <th style={{ opacity: '50%', width: '80vw', padding: '2% 0 2% 0' }}>Gender</th>
+                                    <input type='text' name='gender' value={signup.gender} className='form-control' onChange={changehandeler} />
+                                </tr>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <tr className='me-3'>
+                                    <th style={{ opacity: '50%', width: '80vw', padding: '2% 0 2% 0' }}>Email ID</th>
+                                    <input type='email' name='email' value={signup.email} className='form-control' onChange={changehandeler} />
+                                </tr>
+                                <tr>
+                                    <th style={{ opacity: '50%', width: '80vw', padding: '2% 0 2% 0' }}>Adhaar card No.</th>
+                                    <input type='text' name='adhar_card_no' value={signup.adhar_card_no} className='form-control' onChange={changehandeler} />
+                                </tr>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <tr className='me-3'>
+                                    <th style={{ opacity: '50%', width: '80vw', padding: '2%  0 2% 0' }}>Address</th>
+                                    <textarea type='text' name='address' value={signup.address} className='form-control' onChange={changehandeler} />
+                                </tr>
+                                <tr>
+                                    <th style={{ opacity: '50%', width: '80vw', padding: '2%  0 2% 0' }}>Set Password</th>
+                                    {showPassword ? (
+                                        <input type='text' name='password' value={signup.password} className='form-control' onChange={changehandeler}/>
+                                    ) : (
+                                        <input
+                                            type='password'
+                                            name='password'
+                                            value={signup.password}
+                                            className='form-control'
+                                            onChange={changehandeler}
+                                        />
+                                    )}
+                                    <label>
+                                        Show Password
+                                        <input
+                                            type='checkbox'
+                                            checked={showPassword}
+                                            onChange={togglePassword}
+                                        />
+                                    </label>
+                                </tr>
+                            </div>
+                            <div style={{ display: "flex", justifyContent: 'end', alignItems: 'end' }}>
+                                <button type='submit' className='btn btn-success'>Save</button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </main>
+    )
+}
+
+export default Addagent

@@ -1,0 +1,9 @@
+.printable-content {
+    width: 210mm; /* A4 width */
+    height: 297mm; /* A4 height */
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
+    font-size: 100px;
+  }
