@@ -5,54 +5,45 @@ import Modal from 'react-modal';
 const Purchase = () => {
 
     const [rows, setRows] = useState([
-        { id: 1, party_name: '', item_name: '', qauntity: '', amount: '' },
-        // { id: 2, itemName: '', qty: '', unitPrice: '', total: '' },
-        // { id: 3, itemName: '', qty: '', unitPrice: '', total: '' },
-        // { id: 4, itemName: '', qty: '', unitPrice: '', total: '' },
-        // { id: 5, itemName: '', qty: '', unitPrice: '', total: '' },
+        {id:1, party_name: '', item_name: '', qauntity: '', amount: '' },
+      
     ]);
     const [todayDate, setTodayDate] = useState('');
 
     const [modalIsOpen, setModalIsOpen] = useState(false)
     const [modalIsOpenitem, setModalIsOpenitem] = useState(false)
-    const [focusedRowIndex, setFocusedRowIndex] = useState(null);
-    const [focusedRowitem, setFocusedRowitem] = useState(null);
     const [purchaseitem, setpurchaseitem] = useState([{ item_name: '', gst_no: '' }])
     const [purchaseclient, setpurchaseclient] = useState([{ name: '', address: '', city: '', state: '', mobile_number: '', gst_no: '' }])
     const [purchase_client, setpurchase_client] = useState([])
     const [purchase_item, setpurchase_item] = useState([])
-    const [filteredClients, setFilteredClients] = useState([]);
-    const [filteredItems, setFilteredItems] = useState([]);
+    const [client, setClient] = useState([]);
+    const [item, setitem] = useState([]);
     const [TotalAmount, setTotalAmount] = useState(0);
-    const [selectedClient, setSelectedClient] = useState(null);
+    const [itemModel, setItemModel]=useState(false)
+    const [clientModel, setClientModel]=useState(false)
+
+   
+  
 
 
     const handleClientSelection = (client) => {
-        setSelectedClient(client);
-        const updatedRows = [...rows];
-        updatedRows[focusedRowIndex].party_name = client.name; // Set the selected client's name in the input field
-        setRows(updatedRows);
-        setFilteredClients([]); // Clear the filtered clients list
+        console.log('New client', client);
+        setClient(client.name)
+    };
+    const handleitemSelection = (item) => {
+        console.log('New client', item);
+        setitem(item.item_name)
     };
 
+    console.log('index', client);
 
 
 
-    const filterClients = (input) => {
-        const filtered = purchase_client.filter((client) => {
-            return client.name.toLowerCase().includes(input.toLowerCase());
-        });
-        setFilteredClients(filtered);
-    };
+
+  
 
 
 
-    const filterItems = (input) => {
-        const filtered = purchase_item.filter((item) => {
-            return item.item_name.toLowerCase().includes(input.toLowerCase());
-        });
-        setFilteredItems(filtered);
-    };
 
     useEffect(() => {
         // invoice_no();
@@ -64,7 +55,7 @@ const Purchase = () => {
     const get_purchaseclient = () => {
         axios.get('http://localhost:3001/getclient')
             .then(response => {
-                console.log(response.data)
+                console.log("Client Data",response.data)
                 setpurchase_client(response.data)
             })
     }
@@ -72,7 +63,7 @@ const Purchase = () => {
     const get_purchaseitem = () => {
         axios.get('http://localhost:3001/getitem')
             .then(response => {
-                console.log(response.data)
+                console.log('Item Data',response.data)
                 setpurchase_item(response.data)
             })
     }
@@ -100,57 +91,52 @@ const Purchase = () => {
         if (e.key === 'Enter') {
             const newRow = { id: rows.length + 1, party_name: '', item_name: '', qauntity: '', amount: '' };
             setRows([...rows, newRow]);
-            console.log(`Pressed Enter in row ${index}, field ${field}`);
-            const nextRowIndex = index + 1;
-            if (nextRowIndex < rows.length) {
-                const nextRowInput = document.getElementById(`${field}-${nextRowIndex}`);
-                if (nextRowInput) {
-                    nextRowInput.focus();
-                }
-            }
+            // console.log(`Pressed Enter in row ${index}, field ${field}`);
+            // const nextRowIndex = index + 1;
+            // if (nextRowIndex < rows.length) {
+            //     const nextRowInput = document.getElementById(`${field}-${nextRowIndex}`);
+            //     if (nextRowInput) {
+            //         nextRowInput.focus();
+            //     }
+            // }
         }
+    };
+
+    const handleRowChange = (index, field, value) => {
+        const newRows = rows.map((row, i) => {
+            if (i === index) {
+                return { ...row, [field]: value };
+            }
+            return row;
+        });
+        setRows(newRows);
+    };
+
+    const addRow = () => {
+        setRows([...rows, { client: '', item: '', quantity: '', amount: '' }]);
     };
 
     const removeRow = (index) => {
-        const updatedRows = [...rows];
-        updatedRows.splice(index, 1);
-        // Update index numbers of remaining rows
-        for (let i = index; i < updatedRows.length; i++) {
-            updatedRows[i].id = i + 1;
-        }
-        setRows(updatedRows);
-    }
+        setRows(rows.filter((_, i) => i !== index));
+    };
+
+    // const removeRow = (index) => {
+    //     const updatedRows = [...rows];
+    //     updatedRows.splice(index, 1);
+    //     // Update index numbers of remaining rows
+    //     for (let i = index; i < updatedRows.length; i++) {
+    //         updatedRows[i].id = i + 1;
+    //     }
+    //     setRows(updatedRows);
+    // }
 
 
-    const handleRowChange = (index, field, value) => {
-        const updatedRows = [...rows];
-        updatedRows[index][field] = value;
-
-
+    // const handleRowChange = () => {
        
 
-        if (field === 'party_name') {
 
-            filterClients(value);
-        } else if (field === 'item_name') {
-            filterItems(value);
-        }
-
-        if (field === 'qauntity' || field === 'amount') {
-            // Recalculate the total amount when the "Quantity" or "Amount" field changes
-            let TotalAmount = 0;
-            updatedRows.forEach((row) => {
-                const quantity = parseFloat(row.qauntity) || 0;
-                const amount = parseFloat(row.amount) || 0;
-                TotalAmount += quantity * amount;
-            });
-            setTotalAmount(TotalAmount);
-        }
-
-        setRows(updatedRows);
-
-        // calculateGrandTotal();
-    };
+    //     // calculateGrandTotal();
+    // };
 
     const addclient = () => {
         setModalIsOpen(true)
@@ -213,29 +199,29 @@ const Purchase = () => {
         <main>
 
 
-            {focusedRowIndex !== null && (
+            {clientModel   && (
                 <tr>
                     <td colSpan="6">
                         <div style={{ position: 'absolute', height: '100vh', overflowY: 'scroll', width: '25vw', zIndex: 1, marginLeft: '62vw', border: '1px solid black', backgroundColor: 'white' }}>
-                            <h3 style={{ textAlign: 'center', position: 'sticky', top: 0, backgroundColor: 'white' }}>List of purchase Client</h3>
+                            <h3 style={{ textAlign: 'center', position: 'sticky', top: 0, backgroundColor: 'white' }}>List of purchase Client <span style={{ cursor:'pointer'}} onClick={()=>setClientModel(false)}>Close</span></h3>
                             {/* Add your content related to "Item Name" here */}
-                            {filteredClients.map((client, index) => (
-                                <h5 key={index + 1} style={{ marginLeft: '5%' }}
-                                    >{client.name}<button className='btn btn-warning'  onClick={() => handleClientSelection(client)}>add</button></h5>
+                            {purchase_client.map((client, index) => (
+                                <h5 key={index + 1} style={{ marginLeft: '5%', cursor:'pointer' }} onClick={() => handleClientSelection(client)}
+                                    >{client.name}</h5>
                             ))}
                         </div>
                     </td>
                 </tr>
             )}
 
-            {focusedRowitem !== null && (
+            {itemModel  && (
                 <tr>
                     <td colSpan="6">
                         <div style={{ position: 'absolute', height: '100vh', width: '25vw', overflowY: 'scroll', zIndex: 1, marginLeft: '62vw', border: '1px solid black', backgroundColor: 'white' }}>
-                            <h3 style={{ textAlign: 'center', position: 'sticky', top: 0, backgroundColor: 'white' }}>List of item</h3>
+                            <h3 style={{ textAlign: 'center', position: 'sticky', top: 0, backgroundColor: 'white' }}>List of item <span style={{ cursor:'pointer'}} onClick={()=>setItemModel(false)}>Close</span></h3>
                             {/* Add your content related to "Item Name" here */}
-                            {filteredItems.map((item, index) => (
-                                <h5 key={index + 1} style={{ marginLeft: '5%' }}>{item.item_name}</h5>
+                            {purchase_item.map((item, index) => (
+                                <h5 key={index + 1} style={{ marginLeft: '5%', cursor:'pointer' }}  onClick={() => handleitemSelection(item)}>{item.item_name}</h5>
                             ))}
                         </div>
                     </td>
@@ -258,93 +244,80 @@ const Purchase = () => {
                     </label>
                 </div>
                 <div style={{ height: '250px', overflowY: 'scroll', alignItems: 'start', margin: '3%' }}>
-                    <table style={{ width: '70vw', marginLeft: '5%' }}>
-                        <thead style={{ position: 'sticky', top: '0', backgroundColor: 'white' }}>
-                            <tr>
-                                <th></th>
-                                <th>Party Name</th>
-                                <th>Item Name</th>
-                                <th>Quantity</th>
-                                <th>Amount</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody >
-
-                            {rows.map((row, index) => {
-                                return (
-
-                                    <tr style={{ margin: '5px' }}>
-                                        <td style={{ textAlign: 'center' }}>{row.id}.</td>
-                                        <td style={{ textAlign: 'center' }}>
-                                            <input
-                                                // id={`item_name-${index}`}
-                                                className='form-control rounded'
-                                                style={{ width: '100%' }}
-                                                value={selectedClient}  
-                                                  onChange={(e) =>  handleRowChange(index, 'party_name', e.target.value)} // Set row.party_name
-
-                                                // onKeyPress={(e) => handleKeyPress(e, index, 'qty')}
-                                                onFocus={() => setFocusedRowIndex(index)}
-                                                onBlur={() => setFocusedRowIndex(null)}
-                                            />
-                                        </td>
-                                        <td style={{ textAlign: 'center' }}>
-                                            <input
-                                                type='tel'
-                                                name='qty'
-
-                                                // id={`qty-${index}`}
-                                                className='form-control rounded'
-                                                style={{ width: '100%' }}
-                                                value={rows.item_name}  
-                                                onChange={(e) => handleRowChange(index, 'item_name', e.target.value)}
-                                                onFocus={() => setFocusedRowitem(index)}
-                                                onBlur={() => setFocusedRowitem(null)}
-                                            />
-                                        </td>
-                                        <td style={{ textAlign: 'center' }}>
-                                            <input
-                                                type='tel'
-                                                pattern='[0-9]*'
-                                                // id={`unitPrice-${index}`}
-                                                className='form-control rounded'
-                                                style={{ width: '100%' }}
-                                                value={row.unitPrice}
-                                                name='qauntity'
-                                                onChange={(e) => handleRowChange(index, 'qauntity', e.target.value)}
-                                                onKeyPress={(e) => handleKeyPress(e, index + 1, 'qauntity')}
-                                                onClick={handleKeyPress}
-                                            />
-                                        </td>
-                                        <td style={{ textAlign: 'center' }}>
-                                            <input
-                                                // id={`total-${index}`}
-                                                className='form-control rounded'
-                                                style={{ width: '100%' }}
-                                                value={row.amount}
-                                                name='amount'
-                                                onChange={(e) => handleRowChange(index, 'amount', e.target.value)}
-                                            // onKeyPress={(e) => handleKeyPress(e, index + 1, 'itemName')}
-                                            // onClick={handleKeyPress}
-
-                                            />
-                                        </td>
-                                        <td style={{ textAlign: 'center' }}>
-                                            {rows.length > 1 ? (
-                                                <button className='btn btn-danger' onClick={() => removeRow(index)}>
-                                                    Remove
-                                                </button>
-                                            ) : null}
-                                        </td>
-                                    </tr>
-
-                                )
-                            }
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+            <table style={{ width: '70vw', marginLeft: '5%' }}>
+                <thead style={{ position: 'sticky', top: '0', backgroundColor: 'white' }}>
+                    <tr>
+                        <th>Party Name</th>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows.map((row, index) => (
+                        <tr key={index} style={{ marginBottom: '25px', marginTop: '20px' }}>
+                            <td style={{ textAlign: 'center' }}>
+                                <input
+                                    className='form-control rounded'
+                                    style={{ width: '100%' }}
+                                    value={row.client}
+                                    onChange={(e) => handleRowChange(index, 'client', e.target.value)}
+                                    onFocus={() => setClientModel(true)}
+                                />
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                                <input
+                                    type='tel'
+                                    name='qty'
+                                    className='form-control rounded'
+                                    style={{ width: '100%' }}
+                                    value={row.item}
+                                    onChange={(e) => handleRowChange(index, 'item', e.target.value)}
+                                    onFocus={() => setItemModel(true)}
+                                />
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                                <input
+                                    type='tel'
+                                    pattern='[0-9]*'
+                                    className='form-control rounded'
+                                    style={{ width: '100%' }}
+                                    value={row.quantity}
+                                    name='quantity'
+                                    onChange={(e) => handleRowChange(index, 'quantity', e.target.value)}
+                                    onKeyPress={(e) => handleKeyPress(e, index + 1, 'quantity')}
+                                    onClick={handleKeyPress}
+                                />
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                                <input
+                                    className='form-control rounded'
+                                    style={{ width: '100%' }}
+                                    value={row.amount}
+                                    name='amount'
+                                    onChange={(e) => handleRowChange(index, 'amount', e.target.value)}
+                                />
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                                {rows.length > 1 && (
+                                    <button className='btn btn-danger' onClick={() => removeRow(index)}>
+                                        Remove
+                                    </button>
+                                )}
+                            </td>
+                        </tr>
+                    ))}
+                    <tr style={{marginTop:'10px'}}>
+                        <td colSpan="5" style={{ textAlign: 'center', marginTop:'10px' }}>
+                            <button className='btn btn-primary' onClick={addRow}>
+                                Add Row
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
                 <div style={{ marginTop: '30vh' }}>
                     <div style={{ display: "flex", justifyContent: 'end', alignItems: 'end', width: '80vw' }}>
                         <div style={{ padding: '1%', border: '1px solid black', width: '10vw', height: '10vh', display: "flex-end", justifyContent: 'end', alignItems: 'end' }}>
